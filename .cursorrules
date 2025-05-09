@@ -1,0 +1,190 @@
+# Règles et Patterns pour MiniMeet
+
+## Conventions de Nommage
+
+### Fichiers et Composants
+- Les noms de composants React utilisent le PascalCase: `VideoPlayer.jsx`, `ChatBox.jsx`
+- Les noms de fichiers utilitaires utilisent le camelCase: `supabaseClient.js`, `peerClient.js`
+- Les noms de pages utilisent le PascalCase: `Login.jsx`, `Dashboard.jsx`
+
+### Variables et Fonctions
+- Les variables et fonctions utilisent le camelCase: `getUserMedia`, `handleVideoStream`
+- Les constantes globales utilisent le SNAKE_CASE majuscule: `DEFAULT_CONFIG`, `API_ENDPOINT`
+
+### CSS avec Tailwind
+- Utiliser les classes utilitaires Tailwind directement dans le JSX
+- Extraire les classes répétitives avec `@apply` dans un fichier CSS dédié
+- Suivre une approche mobile-first pour le responsive design
+
+## Architecture de Dossiers
+
+```
+/minimeet
+├── public/             # Actifs statiques
+├── src/
+│   ├── assets/         # Images, polices, etc.
+│   ├── components/     # Composants réutilisables
+│   ├── pages/          # Composants de page
+│   ├── services/       # Services (API, auth, etc.)
+│   ├── context/        # Contextes React
+│   ├── hooks/          # Hooks personnalisés
+│   ├── utils/          # Fonctions utilitaires
+│   ├── App.jsx         # Composant racine
+│   └── main.jsx        # Point d'entrée
+```
+
+## Patterns de Composants
+
+### Composants Fonctionnels
+- Utiliser exclusivement des composants fonctionnels avec hooks
+- Préférer les hooks personnalisés pour la logique réutilisable
+- Structure standard:
+  ```jsx
+  import React from 'react';
+  
+  const ComponentName = ({ prop1, prop2 }) => {
+    // Hooks d'état et d'effet
+    // Logique du composant
+    
+    return (
+      <div>
+        {/* JSX */}
+      </div>
+    );
+  };
+  
+  export default ComponentName;
+  ```
+
+### Gestion d'État
+- Utiliser `useState` pour l'état local simple
+- Utiliser `useReducer` pour l'état local complexe
+- Utiliser Context API pour l'état global
+- Structure de contexte:
+  ```jsx
+  // MyContext.jsx
+  import React, { createContext, useContext, useState } from 'react';
+  
+  const MyContext = createContext();
+  
+  export const MyProvider = ({ children }) => {
+    const [state, setState] = useState(initialState);
+    
+    // Valeur du contexte
+    const value = {
+      state,
+      updateState: () => {...}
+    };
+    
+    return (
+      <MyContext.Provider value={value}>
+        {children}
+      </MyContext.Provider>
+    );
+  };
+  
+  export const useMyContext = () => useContext(MyContext);
+  ```
+
+## Patterns d'API et Services
+
+### Client Supabase
+- Centraliser la configuration dans `supabaseClient.js`
+- Créer des fonctions d'abstraction pour les opérations courantes
+- Structure:
+  ```js
+  // supabaseClient.js
+  import { createClient } from '@supabase/supabase-js';
+  
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  
+  export const supabase = createClient(supabaseUrl, supabaseKey);
+  
+  // Fonctions d'abstraction
+  export const getUser = () => supabase.auth.user();
+  export const signIn = (email, password) => supabase.auth.signIn({ email, password });
+  // etc.
+  ```
+
+### Client PeerJS
+- Centraliser la configuration dans `peerClient.js`
+- Créer des fonctions d'abstraction pour les opérations courantes
+- Structure:
+  ```js
+  // peerClient.js
+  import Peer from 'peerjs';
+  
+  export const createPeer = (userId) => {
+    return new Peer(userId, {
+      host: '/',
+      port: '443',
+      // autres options
+    });
+  };
+  
+  // Fonctions d'abstraction
+  export const connectToPeer = (peer, remotePeerId) => peer.connect(remotePeerId);
+  // etc.
+  ```
+
+## UI et Style
+
+### Composants UI
+- Construire une bibliothèque de composants UI réutilisables
+- Standardiser les props et les comportements
+- Exemples:
+  - Button: primary, secondary, disabled, loading
+  - Input: text, password, error state
+  - Card: titre, contenu, actions
+
+### Thème et Couleurs
+- Définir les couleurs dans `tailwind.config.js`
+- Utiliser les variables CSS pour les couleurs principales
+- Palette de couleurs principale:
+  - Primary: Bleu (#3B82F6)
+  - Secondary: Gris (#6B7280)
+  - Accent: Violet (#8B5CF6)
+  - Background: Blanc (#FFFFFF) / Noir (#111827)
+  - Text: Noir (#111827) / Blanc (#F9FAFB)
+
+## Gestion des Médias
+
+### Flux Vidéo/Audio
+- Utiliser `navigator.mediaDevices.getUserMedia()` pour les flux locaux
+- Standardiser les contraintes vidéo/audio
+- Implémenter des fallbacks pour les navigateurs non supportés
+
+### Enregistrement
+- Utiliser `MediaRecorder` de manière standardisée
+- Format d'enregistrement: WebM
+- Options standard: `{ mimeType: 'video/webm' }`
+
+## Règles de Sécurité
+
+### Authentification
+- Toujours vérifier l'état d'authentification
+- Rediriger vers login si non authentifié
+- Utiliser des routes protégées
+
+### Base de Données
+- Définir des politiques RLS strictes dans Supabase
+- Limiter l'accès aux données pertinentes pour l'utilisateur
+- Valider les entrées utilisateur
+
+## Bonnes Pratiques
+
+### Performance
+- Utiliser React.memo pour les composants purement présentationnels
+- Éviter les re-rendus inutiles
+- Optimiser les dépendances des effets
+
+### Accessibilité
+- Utiliser des attributs ARIA appropriés
+- Assurer la navigation au clavier
+- Maintenir un contraste suffisant
+
+### Tests
+- Tester les composants principaux
+- Tester les hooks personnalisés
+- Simuler les API externes 
